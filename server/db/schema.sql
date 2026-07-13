@@ -14,13 +14,21 @@ CREATE TABLE IF NOT EXISTS users (
   gender        VARCHAR(50)   NOT NULL,
   area          VARCHAR(255)  NOT NULL,
   whatsapp      VARCHAR(30)   NOT NULL,
+  email         VARCHAR(255),
   occupation    TEXT,
   interests     TEXT,
   availability  JSONB         DEFAULT '{}',
   group_size_pref VARCHAR(20),
   bio           TEXT,
+  edit_key      VARCHAR(64),
   created_at    TIMESTAMPTZ   DEFAULT NOW()
 );
+
+-- Migrations for existing databases (no-ops on fresh installs)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS edit_key VARCHAR(64);
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (LOWER(email)) WHERE email IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS sessions (
   id          SERIAL PRIMARY KEY,
@@ -38,3 +46,15 @@ CREATE TABLE IF NOT EXISTS session_members (
   user_id     INTEGER REFERENCES users(id)    ON DELETE CASCADE,
   PRIMARY KEY (session_id, user_id)
 );
+
+-- OTP table for password reset
+CREATE TABLE IF NOT EXISTS password_reset_otps (
+  id         SERIAL PRIMARY KEY,
+  email      VARCHAR(255) NOT NULL,
+  otp_hash   VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMPTZ  NOT NULL,
+  used       BOOLEAN      DEFAULT FALSE,
+  created_at TIMESTAMPTZ  DEFAULT NOW()
+);
+-- Clean up expired OTPs automatically via index
+CREATE INDEX IF NOT EXISTS otp_email_idx ON password_reset_otps (email);
