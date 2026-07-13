@@ -4,8 +4,8 @@ import logo from '../assets/logo.png';
 
 const MUMBAI_AREAS = ['Andheri','Bandra','Borivali','Chembur','Colaba','Dadar','Ghatkopar',
   'Goregaon','Juhu','Kandivali','Kurla','Malad','Mulund','Powai','Santacruz','Thane','Vasai','Virar','Worli'];
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-const TIMES = ['morning','afternoon','evening','night'];
+const DAYS = ['wednesday'];
+// const TIMES = ['morning','afternoon','evening','night'];
 
 export default function IntakeForm() {
   const [profile, setProfile] = useState(null);
@@ -14,7 +14,7 @@ export default function IntakeForm() {
   const [error, setError] = useState('');
   const [form, setForm] = useState({
     name:'', age:'', gender:'', area:'', whatsapp:'', occupation:'',
-    interests:'', bio:'', group_size_pref:'', availability:{ days:[], times:[] }
+    interests:'', bio:'', group_size_pref:'', availability:{ days:['wednesday'], times:[] }
   });
 
   useEffect(() => {
@@ -114,18 +114,13 @@ export default function IntakeForm() {
               <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:8 }}>
                 {DAYS.map(d => (
                   <button type="button" key={d}
-                    className={`btn ${form.availability.days.includes(d) ? 'btn-primary' : ''}`}
-                    style={{ fontSize:12, padding:'4px 12px', textTransform:'capitalize' }}
-                    onClick={() => toggleAvail('days', d)}>{d}</button>
-                ))}</div></div>
+                    className='btn btn-primary'
+                    style={{ fontSize:12, padding:'4px 12px', textTransform:'capitalize', cursor:'default' }}
+                    disabled>{d}</button>
+                ))}</div>
+              <p style={{ fontSize:12, color:'var(--text-2)', marginTop:8 }}>More days coming soon</p></div>
             <div className="field"><label>Preferred Times</label>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginTop:8 }}>
-                {TIMES.map(t => (
-                  <button type="button" key={t}
-                    className={`btn ${form.availability.times.includes(t) ? 'btn-primary' : ''}`}
-                    style={{ fontSize:12, padding:'4px 12px', textTransform:'capitalize' }}
-                    onClick={() => toggleAvail('times', t)}>{t}</button>
-                ))}</div></div>
+              <p style={{ fontSize:12, color:'var(--text-2)', marginTop:8 }}>Time slots coming soon</p></div>
             <div className="field"><label>Group Size Preference</label>
               <div style={{ display:'flex', gap:8, marginTop:8 }}>
                 {['small (2-4)','medium (5-8)','large (9+)','any'].map(s => (
