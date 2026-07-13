@@ -5,7 +5,7 @@ import { PUNE_AREAS } from '../lib/areas';
 import Logo, { LogoStacked } from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
-const DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+const DAYS = ['wednesday'];
 const TIMES = [
   { value: 'afternoon', label: 'Afternoon — 12 PM' },
   { value: 'night', label: 'Night — 8 PM' },
@@ -14,7 +14,7 @@ const SIZES = ['2-3','4-5','5-6','any'];
 
 const EMPTY = {
   name:'', age:'', gender:'', area:'', whatsapp:'', email:'', occupation:'',
-  interests:'', bio:'', group_size_pref:'', availability:{ days:[], times:[] }
+  interests:'', bio:'', group_size_pref:'', availability:{ days:['wednesday'], times:[] }
 };
 
 
@@ -37,7 +37,7 @@ function profileToForm(p) {
     name: p.name || '', age: p.age || '', gender: p.gender || '', area: p.area || '',
     whatsapp: p.whatsapp || '', email: p.email || '', occupation: p.occupation || '',
     interests: p.interests || '', bio: p.bio || '', group_size_pref: p.group_size_pref || '',
-    availability: { days: p.availability?.days || [], times: p.availability?.times || [] }
+    availability: { days: ['wednesday'], times: p.availability?.times || [] }
   };
 }
 
@@ -195,7 +195,7 @@ export default function IntakeForm() {
                 {DAYS.map(d => (
                   <button type="button" key={d}
                     className={`pill ${form.availability.days.includes(d) ? 'active' : ''}`}
-                    onClick={() => toggleAvail('days', d)}>{d.slice(0,3)}</button>
+                    disabled>{d.slice(0,3)}</button>
                 ))}</div></div>
             <div className="field" style={{ marginBottom: 0 }}><label>Preferred Times</label>
               <div className="pill-row">
