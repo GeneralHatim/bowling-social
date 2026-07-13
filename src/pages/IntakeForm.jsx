@@ -7,8 +7,8 @@ import ThemeToggle from '../components/ThemeToggle';
 
 const DAYS = ['wednesday'];
 const TIMES = [
-  { value: 'afternoon', label: 'Afternoon — 12 PM' },
-  { value: 'night', label: 'Night — 8 PM' },
+  { value: 'afternoon', label: 'Afternoon' },
+  { value: 'night', label: 'Night' },
 ];
 const SIZES = ['2-3','4-5','5-6','any'];
 
