@@ -10,7 +10,7 @@ const TIMES = [
   { value: 'night', label: 'Night' },
 ];
 const SIZES = ['2-3','4-5','5-6','any'];
-const ARENAS = ['The Game Palacio Pune'];
+const ARENAS = ['The Game Palacio Pune - The Mills, Sangamwadi'];
 
 const EMPTY = {
   name:'', age:'', gender:'', area:'', whatsapp:'', email:'', occupation:'',
