@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { submitForm, getMyProfile, getGuestProfile } from '../lib/api';
-import { PUNE_AREAS } from '../lib/areas';
 import Logo, { LogoStacked } from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -11,6 +10,7 @@ const TIMES = [
   { value: 'night', label: 'Night' },
 ];
 const SIZES = ['2-3','4-5','5-6','any'];
+const ARENAS = ['The Game Palacio Pune'];
 
 const EMPTY = {
   name:'', age:'', gender:'', area:'', whatsapp:'', email:'', occupation:'',
@@ -169,10 +169,10 @@ export default function IntakeForm() {
                   <option>Male</option><option>Female</option><option>Non-binary</option><option>Prefer not to say</option>
                 </select></div>
             </div>
-            <div className="field"><label>Area in Pune *</label>
+            <div className="field"><label>Bowling Arena *</label>
               <select value={form.area} onChange={e => set('area', e.target.value)} required>
-                <option value="">Select your area</option>
-                {PUNE_AREAS.map(a => <option key={a} value={a}>{a}</option>)}
+                <option value="">Select a bowling arena</option>
+                {ARENAS.map(a => <option key={a} value={a}>{a}</option>)}
               </select></div>
             <div className="field" style={{ marginBottom: 0 }}><label>Occupation</label>
               <input value={form.occupation} onChange={e => set('occupation', sanitize.text(e.target.value))} placeholder="Student, engineer, between jobs — anything goes" /></div>
