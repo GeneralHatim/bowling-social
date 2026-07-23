@@ -14,7 +14,8 @@ async function apiFetch(path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  if (res.status === 401) {
+  const isAuthEndpoint = path === '/auth/login' || path === '/auth/register';
+  if (res.status === 401 && !isAuthEndpoint) {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     window.location.href = '/login';
