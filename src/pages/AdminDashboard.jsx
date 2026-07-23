@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUsers, getSessions, createSession, getAccounts, setAccountRole, deleteUser, resetAccountPassword } from '../lib/api';
+import { getUsers, getSessions, createSession, getAccounts, setAccountRole, deleteUser, resetAccountPassword, revealSecretWord } from '../lib/api';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -87,6 +87,24 @@ export default function AdminDashboard() {
   const [newPwd, setNewPwd] = useState('');
   const [pwdSaving, setPwdSaving] = useState(false);
   const [pwdError, setPwdError] = useState('');
+
+  const [revealModal, setRevealModal] = useState(null); // { id, name }
+  const [revealPwd, setRevealPwd] = useState('');
+  const [revealResult, setRevealResult] = useState('');
+  const [revealError, setRevealError] = useState('');
+  const [revealLoading, setRevealLoading] = useState(false);
+
+  function openReveal(u) { setRevealModal({ id: u.id, name: u.name }); setRevealPwd(''); setRevealResult(''); setRevealError(''); }
+  function closeReveal() { setRevealModal(null); setRevealPwd(''); setRevealResult(''); setRevealError(''); }
+
+  async function handleRevealSecret(e) {
+    e.preventDefault(); setRevealError(''); setRevealLoading(true);
+    try {
+      const d = await revealSecretWord(revealModal.id, revealPwd);
+      setRevealResult(d.secretWord);
+    } catch (err) { setRevealError(err.message); }
+    finally { setRevealLoading(false); }
+  }
 
   async function handlePasswordReset(e) {
     e.preventDefault(); setPwdError(''); setPwdSaving(true);
@@ -186,9 +204,14 @@ export default function AdminDashboard() {
                       <td style={{ fontSize:12 }}>{u.email || '—'}</td>
                       <td><AvailChips availability={u.availability} /></td>
                       <td style={{ fontSize:12, color:'var(--text-muted)' }}>{new Date(u.created_at).toLocaleDateString()}</td>
-                      <td><button className="btn" title="Delete entry"
-                        style={{ fontSize:12, padding:'3px 9px', color:'var(--danger)' }}
-                        onClick={() => handleDelete(u)}>✕</button></td>
+                      <td style={{ display:'flex', gap:4 }}>
+                        <button className="btn" title="Reveal secret word"
+                          style={{ fontSize:12, padding:'3px 9px' }}
+                          onClick={() => openReveal(u)}>🔒</button>
+                        <button className="btn" title="Delete entry"
+                          style={{ fontSize:12, padding:'3px 9px', color:'var(--danger)' }}
+                          onClick={() => handleDelete(u)}>✕</button>
+                      </td>
                     </tr>
                   ))}
                   {!users.length && <tr><td colSpan={10} style={{ textAlign:'center', color:'var(--text-muted)', padding:32 }}>No users found</td></tr>}
@@ -291,6 +314,46 @@ export default function AdminDashboard() {
                 <button type="submit" className="btn btn-primary">Create</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reveal secret word modal */}
+      {revealModal && (
+        <div className="modal-overlay" onClick={closeReveal}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3>Secret Word</h3>
+            <p style={{ fontSize:14, color:'var(--text-muted)', marginBottom:16 }}>
+              Reveal secret word for <strong>{revealModal.name}</strong>
+            </p>
+            {revealResult ? (
+              <>
+                <p style={{ fontSize:13, color:'var(--text-muted)', marginBottom:8 }}>Secret word:</p>
+                <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8,
+                  padding:'12px 16px', fontFamily:'monospace', fontSize:18, fontWeight:700,
+                  letterSpacing:1, userSelect:'text', marginBottom:16 }}>
+                  {revealResult}
+                </div>
+                <div style={{ display:'flex', justifyContent:'flex-end' }}>
+                  <button className="btn" onClick={closeReveal}>Close</button>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={handleRevealSecret}>
+                <div className="field">
+                  <label>Reveal Password</label>
+                  <input type="password" value={revealPwd} onChange={e => setRevealPwd(e.target.value)}
+                    required autoFocus placeholder="Admin reveal password" />
+                </div>
+                {revealError && <p className="form-error">{revealError}</p>}
+                <div style={{ display:'flex', gap:8, justifyContent:'flex-end', marginTop:8 }}>
+                  <button type="button" className="btn" onClick={closeReveal}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={revealLoading}>
+                    {revealLoading ? 'Checking…' : 'Reveal'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

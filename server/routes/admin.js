@@ -2,6 +2,9 @@ const router = require('express').Router();
 const pool = require('../db/pool');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 
+// Explicit column list — excludes secret_word_plain which is only returned by /reveal-secret
+const USER_COLS = 'id, account_id, name, age, gender, area, whatsapp, email, occupation, interests, availability, group_size_pref, bio, edit_key, created_at';
+
 router.use(verifyToken, requireAdmin);
 
 // GET /api/admin/users
@@ -39,7 +42,7 @@ router.get('/users', async (req, res) => {
       if (clauses.length) conditions.push('(' + clauses.join(' OR ') + ')');
     }
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
-    const { rows } = await pool.query(`SELECT * FROM users ${where} ORDER BY ${col} ${dir}`, values);
+    const { rows } = await pool.query(`SELECT ${USER_COLS} FROM users ${where} ORDER BY ${col} ${dir}`, values);
     res.json(rows);
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
@@ -47,7 +50,7 @@ router.get('/users', async (req, res) => {
 // GET /api/admin/users/:id
 router.get('/users/:id', async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM users WHERE id = $1', [req.params.id]);
+    const { rows } = await pool.query(`SELECT ${USER_COLS} FROM users WHERE id = $1`, [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) { res.status(500).json({ error: 'Server error' }); }
@@ -122,7 +125,8 @@ router.get('/sessions/:id', async (req, res) => {
     const { rows: [session] } = await pool.query('SELECT * FROM sessions WHERE id = $1', [req.params.id]);
     if (!session) return res.status(404).json({ error: 'Not found' });
     const { rows: members } = await pool.query(
-      'SELECT u.* FROM users u JOIN session_members sm ON u.id = sm.user_id WHERE sm.session_id = $1',
+      `SELECT u.id, u.account_id, u.name, u.age, u.gender, u.area, u.whatsapp, u.email, u.occupation, u.interests, u.availability, u.group_size_pref, u.bio, u.edit_key, u.created_at
+       FROM users u JOIN session_members sm ON u.id = sm.user_id WHERE sm.session_id = $1`,
       [req.params.id]
     );
     res.json({ ...session, members });
@@ -148,6 +152,22 @@ router.delete('/users/:id', async (req, res) => {
     const { rowCount } = await pool.query('DELETE FROM users WHERE id = $1', [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Not found' });
     res.json({ success: true });
+  } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/admin/reveal-secret/:userId — return plain-text secret word after reveal-password check
+router.post('/reveal-secret/:userId', async (req, res) => {
+  const { revealPassword } = req.body;
+  const expected = process.env.SECRET_REVEAL_PASSWORD;
+  if (!expected || revealPassword !== expected) {
+    return res.status(401).json({ error: 'Incorrect reveal password.' });
+  }
+  try {
+    const { rows } = await pool.query('SELECT secret_word_plain FROM users WHERE id = $1', [req.params.userId]);
+    const user = rows[0];
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    if (!user.secret_word_plain) return res.status(404).json({ error: 'No secret word set for this user.' });
+    res.json({ secretWord: user.secret_word_plain });
   } catch (err) { console.error(err); res.status(500).json({ error: 'Server error' }); }
 });
 

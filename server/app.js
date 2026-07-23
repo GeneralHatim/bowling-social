@@ -57,9 +57,19 @@ const submitLimiter = rateLimit({
   skip: (req) => req.path !== '/submit',   // only /api/submit
 });
 
+// Reveal secret: 5 attempts per IP per 15 min (brute-force protection on reveal password)
+const revealLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many reveal attempts. Please wait 15 minutes and try again.' },
+});
+
 app.use('/api/auth/verify-secret-word', secretWordLimiter);
-app.use('/api/auth',   authLimiter,   require('./routes/auth'));
-app.use('/api',        submitLimiter, require('./routes/public'));
-app.use('/api/admin',                 require('./routes/admin'));
+app.use('/api/auth',                    authLimiter,   require('./routes/auth'));
+app.use('/api',                         submitLimiter, require('./routes/public'));
+app.use('/api/admin/reveal-secret',     revealLimiter);
+app.use('/api/admin',                                  require('./routes/admin'));
 
 module.exports = app;

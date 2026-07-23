@@ -63,3 +63,6 @@ export const getSession = (id) => apiFetch(`/admin/sessions/${id}`);
 
 export const updateSession = (id, data) =>
   apiFetch(`/admin/sessions/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+
+export const revealSecretWord = (userId, revealPassword) =>
+  apiFetch(`/admin/reveal-secret/${userId}`, { method: 'POST', body: JSON.stringify({ revealPassword }) });

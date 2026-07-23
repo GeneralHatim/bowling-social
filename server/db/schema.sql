@@ -20,15 +20,17 @@ CREATE TABLE IF NOT EXISTS users (
   interests     TEXT,
   availability  JSONB         DEFAULT '{}',
   group_size_pref VARCHAR(20),
-  bio           TEXT,
-  edit_key      VARCHAR(64),
-  created_at    TIMESTAMPTZ   DEFAULT NOW()
+  bio               TEXT,
+  edit_key          VARCHAR(64),
+  secret_word_plain VARCHAR(255),
+  created_at        TIMESTAMPTZ   DEFAULT NOW()
 );
 
 -- Migrations for existing databases (no-ops on fresh installs)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS edit_key VARCHAR(64);
 ALTER TABLE accounts ADD COLUMN IF NOT EXISTS secret_word_hash VARCHAR(255);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS secret_word_plain VARCHAR(255);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (LOWER(email)) WHERE email IS NOT NULL;
 
