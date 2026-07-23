@@ -37,6 +37,16 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts, please try again in 15 minutes.' },
 });
 
+// Secret word: 5 attempts per email per 15 min (tighter, keyed by email not IP)
+const secretWordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Please wait 15 minutes and try again.' },
+  keyGenerator: (req) => (req.body?.email || req.ip).toLowerCase(),
+});
+
 // Submit: 8 submissions per IP per hour (spam protection)
 const submitLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
@@ -47,6 +57,7 @@ const submitLimiter = rateLimit({
   skip: (req) => req.path !== '/submit',   // only /api/submit
 });
 
+app.use('/api/auth/verify-secret-word', secretWordLimiter);
 app.use('/api/auth',   authLimiter,   require('./routes/auth'));
 app.use('/api',        submitLimiter, require('./routes/public'));
 app.use('/api/admin',                 require('./routes/admin'));

@@ -1,9 +1,10 @@
 CREATE TABLE IF NOT EXISTS accounts (
-  id            SERIAL PRIMARY KEY,
-  email         VARCHAR(255) UNIQUE NOT NULL,
-  password_hash VARCHAR(255) NOT NULL,
-  role          VARCHAR(20)  DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-  created_at    TIMESTAMPTZ  DEFAULT NOW()
+  id               SERIAL PRIMARY KEY,
+  email            VARCHAR(255) UNIQUE NOT NULL,
+  password_hash    VARCHAR(255) NOT NULL,
+  secret_word_hash VARCHAR(255),
+  role             VARCHAR(20)  DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  created_at       TIMESTAMPTZ  DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Migrations for existing databases (no-ops on fresh installs)
 ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS edit_key VARCHAR(64);
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS secret_word_hash VARCHAR(255);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (LOWER(email)) WHERE email IS NOT NULL;
 

@@ -25,8 +25,8 @@ async function apiFetch(path, options = {}) {
   return data;
 }
 
-export const register = (email, password) =>
-  apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
+export const register = (email, password, secretWord) =>
+  apiFetch('/auth/register', { method: 'POST', body: JSON.stringify({ email, password, secretWord }) });
 
 export const login = (email, password) =>
   apiFetch('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
