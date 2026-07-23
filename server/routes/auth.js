@@ -7,17 +7,15 @@ const SUPER_ADMIN_EMAIL = (process.env.SUPER_ADMIN_EMAIL || '').toLowerCase();
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
-  const { email, password, secretWord } = req.body;
+  const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-  if (!secretWord || !secretWord.trim()) return res.status(400).json({ error: 'Secret word required' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
-    const passwordHash    = await bcrypt.hash(password, 10);
-    const secretWordHash  = await bcrypt.hash(secretWord.trim().toLowerCase(), 10);
+    const passwordHash = await bcrypt.hash(password, 10);
     const role = email.toLowerCase() === SUPER_ADMIN_EMAIL ? 'admin' : 'user';
     const { rows } = await pool.query(
-      'INSERT INTO accounts (email, password_hash, secret_word_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, email, role',
-      [email.toLowerCase(), passwordHash, secretWordHash, role]
+      'INSERT INTO accounts (email, password_hash, role) VALUES ($1, $2, $3) RETURNING id, email, role',
+      [email.toLowerCase(), passwordHash, role]
     );
     const account = rows[0];
     res.json({ token: signToken({ id: account.id, email: account.email, role: account.role }), role: account.role });
@@ -34,7 +32,7 @@ router.post('/login', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM accounts WHERE email = $1', [email.toLowerCase()]);
     const account = rows[0];
-    if (!account) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!account) return res.status(401).json({ error: 'No account found with this email — sign up first.' });
     const match = await bcrypt.compare(password, account.password_hash);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
     if (email.toLowerCase() === SUPER_ADMIN_EMAIL && account.role !== 'admin') {

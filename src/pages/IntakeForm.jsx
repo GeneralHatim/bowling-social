@@ -50,6 +50,7 @@ export default function IntakeForm() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState(EMPTY);
+  const [secretWord, setSecretWord] = useState('');
   const isLoggedIn = !!localStorage.getItem('token');
 
   useEffect(() => {
@@ -91,7 +92,9 @@ export default function IntakeForm() {
     setError('');
     setSaving(true);
     try {
-      const result = await submitForm({ ...form, age: parseInt(form.age) });
+      const payload = { ...form, age: parseInt(form.age) };
+      if (isLoggedIn && secretWord.trim()) payload.secretWord = secretWord.trim();
+      const result = await submitForm(payload);
       localStorage.setItem('profile_id', result.id);
       if (result.edit_key) localStorage.setItem('profile_key', result.edit_key);
       setSubmitted(true);
@@ -220,6 +223,18 @@ export default function IntakeForm() {
             <div className="field" style={{ marginBottom: 0 }}><label>Anything else to know about you?</label>
               <textarea value={form.bio} onChange={e => set('bio', sanitize.free(e.target.value))} rows={3} placeholder="Optional" /></div>
           </div>
+
+          {isLoggedIn && (
+            <div className="card form-section">
+              <h3 className="section-title">🔐 Account Security</h3>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label>Secret Word <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(for password recovery — separate from your password)</span></label>
+                <input type="text" value={secretWord} onChange={e => setSecretWord(e.target.value)}
+                  autoComplete="off" placeholder="Leave blank to keep existing" />
+                <span className="field-hint">Used to verify your identity if you ever forget your password. Leave blank to keep your current secret word.</span>
+              </div>
+            </div>
+          )}
 
           {error && <p className="form-error">{error}</p>}
           <button className="btn btn-primary btn-lg" type="submit" disabled={saving || (form.email && !validEmail(form.email))} style={{ width:'100%' }}>
